@@ -1,8 +1,16 @@
 import { Meteor } from 'meteor/meteor';
 import { Mongo } from 'meteor/mongo';
 import { check } from 'meteor/check';
- 
+import { SimpleSchema } from 'meteor/aldeed:simple-schema';
+
+
+
 export const Tasks = new Mongo.Collection('tasks');
+Tasks.schema = new SimpleSchema({
+  text: {type: String, min: 32, max: 4096 },
+  createdAt: {type: Date, defaultValue: new Date()},
+  owner: {type: String, regEx: SimpleSchema.RegEx.Id}
+});
 
 const checkAuthorized = function(taskId, userId){
   const task = Tasks.findOne(taskId);
@@ -30,12 +38,14 @@ Meteor.methods({
     if (! this.userId) {
       throw new Meteor.Error('not-authorized');
     }
- 
-    Tasks.insert({
+    const doc = {
       text,
       createdAt: new Date(),
       owner: this.userId,
-    });
+    };
+  
+    Tasks.schema.validate(doc);
+    Tasks.insert(doc);
   },
   'tasks.remove'(taskId) {
     check(taskId, String);
