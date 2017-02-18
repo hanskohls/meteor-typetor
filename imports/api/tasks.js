@@ -4,9 +4,9 @@ import { check } from 'meteor/check';
  
 export const Tasks = new Mongo.Collection('tasks');
 
-const checkAuthorized = function(taskId){
+const checkAuthorized = function(taskId, userId){
   const task = Tasks.findOne(taskId);
-  if (task.private && task.owner !== this.userId){
+  if (task.owner !== userId){
     throw new Meteor.Error('not-authorized');
   }
 };
@@ -26,7 +26,6 @@ if (Meteor.isServer){
 Meteor.methods({
   'tasks.insert'(text) {
     check(text, String);
- 
     // Make sure the user is logged in before inserting a task
     if (! this.userId) {
       throw new Meteor.Error('not-authorized');
@@ -36,18 +35,17 @@ Meteor.methods({
       text,
       createdAt: new Date(),
       owner: this.userId,
-      username: Meteor.users.findOne(this.userId).username,
     });
   },
   'tasks.remove'(taskId) {
     check(taskId, String);
-    checkAuthorized(taskId);  
+    checkAuthorized(taskId, this.userId);  
     Tasks.remove(taskId);
   },
   'tasks.setChecked'(taskId, setChecked) {
     check(taskId, String);
     check(setChecked, Boolean);
-    checkAuthorized(taskId); 
+    checkAuthorized(taskId, this.userId); 
     Tasks.update(taskId, { $set: { checked: setChecked } });
   },
   

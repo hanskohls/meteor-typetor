@@ -14,7 +14,7 @@ export default class Task extends Component {
   
   togglePrivate() {
     Meteor.call('tasks.setPrivate', this.props.task._id, ! this.props.task.private);
-  } 
+  }
   
   render() {
     const taskClassName = classnames({
@@ -44,7 +44,7 @@ export default class Task extends Component {
  
         
         <span className="text">
-          <strong>{this.props.task.username}</strong>: {this.props.task.text}
+          {this.props.task.text}
         </span>
       </li>
     );
